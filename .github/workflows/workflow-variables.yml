@@ -1,0 +1,17 @@
+name: Shared Variables
+
+on:
+  workflow_call:
+    outputs:
+      default-nodejs-version:
+        description: "Default Nodejs version"
+        value: "22"
+      matrix-nodejs-pm:
+        description: "Package Managers for Nodejs"
+        value: '["npm", "yarn", "pnpm"]'
+      default-python-version:
+        description: "Default Python version"
+        value: "3.12"
+      default-checkov-version:
+        description: "Default Checkov version"
+        value: "3.2.414"
