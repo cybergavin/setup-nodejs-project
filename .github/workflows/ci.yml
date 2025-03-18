@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       default-nodejs-version: ${{ steps.set-vars.outputs.default-nodejs-version }}
-      default-pnpm-version: ${{ steps.set-vars.outputs.default-pnpm-version }}
       default-python-version: ${{ steps.set-vars.outputs.default-python-version }}
       default-checkov-version: ${{ steps.set-vars.outputs.default-checkov-version }}
     steps:
@@ -32,7 +31,6 @@ jobs:
         id: set-vars
         run: |
           echo "default-nodejs-version=22" >> $GITHUB_OUTPUT
-          echo "default-pnpm-version=10" >> $GITHUB_OUTPUT
           echo "default-python-version=3.12" >> $GITHUB_OUTPUT
           echo "default-checkov-version=3.2.414" >> $GITHUB_OUTPUT
 
@@ -116,7 +114,7 @@ jobs:
       - name: Install pnpm
         if: matrix.package-manager == 'pnpm'
         run: |
-          curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${{ needs.shared-variables.outputs.default-pnpm-version }} sh -
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
 
       - name: Generate test project
         run: make ${{ matrix.package-manager }}
