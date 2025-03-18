@@ -32,7 +32,7 @@ jobs:
         id: set-vars
         run: |
           echo "default-nodejs-version=22" >> $GITHUB_OUTPUT
-          echo "matrix-nodejs-pm=['npm', 'yarn', 'pnpm']" >> $GITHUB_OUTPUT
+          echo "matrix-nodejs-pm=npm,yarn,pnpm" >> $GITHUB_OUTPUT
           echo "default-python-version=3.12" >> $GITHUB_OUTPUT
           echo "default-checkov-version=3.2.414" >> $GITHUB_OUTPUT
 
@@ -106,7 +106,7 @@ jobs:
     if: ${{ needs.detect-and-scan.outputs.CHANGED_YAML_FILES }} != ''
     strategy:
       matrix:
-        package-manager: ${{ needs.shared-variables.outputs.matrix-nodejs-pm }}
+        package-manager: [ ${{ needs.shared-variables.outputs.matrix-nodejs-pm }} ]
 
     steps:
       - name: Checkout repository
