@@ -19,18 +19,26 @@ permissions:
 
 # Define jobs for the workflow
 jobs:
-  # Fetch shared variables
-  fetch-variables:
-    uses: ./.github/workflows/workflow-variables.yml
+  # Define shared variables
+  shared-variables:
+    runs-on: ubuntu-latest
     outputs:
       default-nodejs-version: ${{ steps.set-vars.outputs.default-nodejs-version }}
       matrix-nodejs-pm: ${{ steps.set-vars.outputs.matrix-nodejs-pm }}
       default-python-version: ${{ steps.set-vars.outputs.default-python-version }}
       default-checkov-version: ${{ steps.set-vars.outputs.default-checkov-version }}
+    steps:
+      - name: Set shared variables
+        id: set-vars
+        run: |
+          echo "default-nodejs-version=22" >> $GITHUB_OUTPUT
+          echo "matrix-nodejs-pm=['npm', 'yarn', 'pnpm']" >> $GITHUB_OUTPUT
+          echo "default-python-version=3.12" >> $GITHUB_OUTPUT
+          echo "default-checkov-version=3.2.414" >> $GITHUB_OUTPUT
 
   # Detect changed files and scan, if applicable
   detect-and-scan:
-    needs: fetch-variables
+    needs: shared-variables
     runs-on: ubuntu-latest
     outputs:
       CHANGED_YAML_FILES: ${{ steps.detect.outputs.CHANGED_YAML_FILES }}
@@ -63,21 +71,16 @@ jobs:
           # Check if README.md has changed (case-insensitive)
           readme_changed=$(echo "$changed_files" | grep -iFx 'README.md' || true)
        
-          # Export to environment
-          echo "CHANGED_YAML_FILES=${yaml_files}" >> $GITHUB_ENV
-          echo "ACTION_CHANGED=${action_changed}" >> $GITHUB_ENV
-          echo "README_CHANGED=${readme_changed}" >> $GITHUB_ENV
-
-          # Export to output
-          echo "CHANGED_YAML_FILES=${yaml_files}" >> $GITHUB_OUTPUT
-          echo "ACTION_CHANGED=${action_changed}" >> $GITHUB_OUTPUT
-          echo "README_CHANGED=${readme_changed}" >> $GITHUB_OUTPUT
+          # Export to environment and output
+          echo "CHANGED_YAML_FILES=${yaml_files}" | tee -a $GITHUB_ENV $GITHUB_OUTPUT > /dev/null
+          echo "ACTION_CHANGED=${action_changed}" | tee -a $GITHUB_ENV $GITHUB_OUTPUT > /dev/null
+          echo "README_CHANGED=${readme_changed}" | tee -a $GITHUB_ENV $GITHUB_OUTPUT > /dev/null
       
       - name: Set up Python
         if: env.CHANGED_YAML_FILES != ''
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: ${{ needs.fetch-variables.outputs.default-python-version }}
+          python-version: ${{ needs.shared-variables.outputs.default-python-version }}
 
       - name: Cache Python packages
         if: env.CHANGED_YAML_FILES != ''
@@ -88,7 +91,7 @@ jobs:
   
       - name: Install Checkov
         if: env.CHANGED_YAML_FILES != ''
-        run: pip install checkov==${{ needs.fetch-variables.outputs.default-checkov-version }}
+        run: pip install checkov==${{ needs.shared-variables.outputs.default-checkov-version }}
   
       - name: Run Checkov Scan
         if: env.CHANGED_YAML_FILES != ''
@@ -98,12 +101,12 @@ jobs:
   # Test, if applicable
   test:
     name: Test setup-nodejs composite action
-    needs: [fetch-variables, detect-and-scan]
+    needs: [shared-variables, detect-and-scan]
     runs-on: ubuntu-latest
     if: ${{ needs.detect-and-scan.outputs.CHANGED_YAML_FILES }} != ''
     strategy:
       matrix:
-        package-manager: ${{ needs.fetch-variables.outputs.matrix-nodejs-pm }}
+        package-manager: ${{ needs.shared-variables.outputs.matrix-nodejs-pm }}
 
     steps:
       - name: Checkout repository
@@ -130,7 +133,7 @@ jobs:
   # Push changes to action.yml and/or README.md into main
   push-to-main:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [detect-and-scan, test]
     # Only run PR creation if action.yml and/or README.md is/are changed
     if: ${{ needs.detect-and-scan.outputs.ACTION_CHANGED }} != '' || ${{ needs.detect-and-scan.outputs.README_CHANGED }} != ''
     steps:
