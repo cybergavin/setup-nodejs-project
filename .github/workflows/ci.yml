@@ -22,6 +22,11 @@ jobs:
   # Fetch shared variables
   fetch-variables:
     uses: ./.github/workflows/workflow-variables.yml
+    outputs:
+      default-nodejs-version: ${{ steps.set-vars.outputs.default-nodejs-version }}
+      matrix-nodejs-pm: ${{ steps.set-vars.outputs.matrix-nodejs-pm }}
+      default-python-version: ${{ steps.set-vars.outputs.default-python-version }}
+      default-checkov-version: ${{ steps.set-vars.outputs.default-checkov-version }}
 
   # Detect changed files and scan, if applicable
   detect-and-scan:
