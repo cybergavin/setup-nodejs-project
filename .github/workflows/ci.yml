@@ -24,9 +24,14 @@ jobs:
     uses: ./.github/workflows/workflow-variables.yml
 
   # Detect changed files and scan, if applicable
-  scan:
+  detect-and-scan:
     needs: fetch-variables
     runs-on: ubuntu-latest
+    outputs:
+      CHANGED_YAML_FILES: ${{ steps.detect.outputs.CHANGED_YAML_FILES }}
+      ACTION_CHANGED: ${{ steps.detect.outputs.ACTION_CHANGED }}
+      README_CHANGED: ${{ steps.detect.outputs.README_CHANGED }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -57,6 +62,11 @@ jobs:
           echo "CHANGED_YAML_FILES=${yaml_files}" >> $GITHUB_ENV
           echo "ACTION_CHANGED=${action_changed}" >> $GITHUB_ENV
           echo "README_CHANGED=${readme_changed}" >> $GITHUB_ENV
+
+          # Export to output
+          echo "CHANGED_YAML_FILES=${yaml_files}" >> $GITHUB_OUTPUT
+          echo "ACTION_CHANGED=${action_changed}" >> $GITHUB_OUTPUT
+          echo "README_CHANGED=${readme_changed}" >> $GITHUB_OUTPUT
       
       - name: Set up Python
         if: env.CHANGED_YAML_FILES != ''
@@ -83,9 +93,9 @@ jobs:
   # Test, if applicable
   test:
     name: Test setup-nodejs composite action
-    needs: [fetch-variables, scan]
+    needs: [fetch-variables, detect-and-scan]
     runs-on: ubuntu-latest
-    if: env.CHANGED_YAML_FILES != ''
+    if: ${{ needs.detect-and-scan.outputs.CHANGED_YAML_FILES }} != ''
     strategy:
       matrix:
         package-manager: ${{ needs.fetch-variables.outputs.matrix-nodejs-pm }}
@@ -117,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     # Only run PR creation if action.yml and/or README.md is/are changed
-    if: env.ACTION_CHANGED != '' || env.README_CHANGED != ''
+    if: ${{ needs.detect-and-scan.outputs.ACTION_CHANGED }} != '' || ${{ needs.detect-and-scan.outputs.README_CHANGED }} != ''
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
