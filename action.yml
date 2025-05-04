@@ -1,8 +1,6 @@
 name: cybergavin/setup-nodejs-project
 author: Cybergavin - https://github.com/cybergavin
-description: >
-  Sets up a specified Node.js version, caches node modules based on the lock file,
-  and installs dependencies conditionally if the cache is missed. Supports npm, yarn, and pnpm.
+description: Sets up a specified Node.js version with support for npm, yarn, and pnpm.
 
 inputs:
   node-version:
@@ -21,8 +19,7 @@ inputs:
     description: >
       The name of the lock file (e.g., 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml').
       Relative to the working-directory. Used for cache key and command detection.
-    required: true
-    
+    required: true  
   working-directory:
     description: >
       The directory containing the Node.js project (where package.json and the lock file are).
@@ -91,3 +88,8 @@ runs:
         echo "Running install command: $INSTALL_CMD"
         # The command runs in the working-directory specified for this step
         $INSTALL_CMD
+
+# The icon and color are used in the GitHub Actions UI to represent this action
+branding:
+  icon: 'terminal'
+  color: 'green'
