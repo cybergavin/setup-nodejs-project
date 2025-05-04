@@ -161,10 +161,6 @@ jobs:
           # Copy only the relevant files from dev
           git checkout dev -- action.yml README.md
 
-          # Commit if there are changes
-          if git diff --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -am "Auto-sync from dev"
-            git push origin main
-          fi
+          # Commit and push files to main
+          git commit -am "Auto-sync from dev"
+          git push origin main

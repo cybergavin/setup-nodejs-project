@@ -1,0 +1,16 @@
+# Checkov configuration file
+# This file is used to configure Checkov's behavior and output format
+compact: true
+quiet: true
+custom-tool-name: Checkov
+download-external-modules: false
+enable-secret-scan-all-files: true
+evaluate-variables: true
+external-modules-download-path: .external_modules
+hard-fail-on:
+- MEDIUM
+output:
+- cli
+summary-position: bottom
+# Skip specific check IDs (exact match or wildcard patterns)
+skip-check:
