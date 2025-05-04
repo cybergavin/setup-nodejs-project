@@ -12,7 +12,7 @@ yarn:
 
 pnpm:
 	mkdir -p test-projects/pnpm
-	cd test-projects/pnpm && pnpm init -y && pnpm add axios
+	cd test-projects/pnpm && pnpm init && pnpm add axios
 
 clean:
 	rm -rf test-projects
